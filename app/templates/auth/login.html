@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="container auth">
+  <div class="panel auth-card">
+    <h1>Connexion</h1>
+    <p class="muted">Content de vous revoir sur Taman Pro.</p>
+    {% if error %}<div class="flash flash-error">{{ error }}</div>{% endif %}
+
+    <form method="post" action="/login" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" value="{{ values.get('email', '') }}" required autocomplete="email" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+    </form>
+    <p class="auth-switch">Pas encore de compte ? <a href="/register?next={{ next | urlencode }}">Créer un compte</a></p>
+  </div>
+</div>
+{% endblock %}

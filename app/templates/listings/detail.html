@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import listing_card %}
+
+{% block title %}{{ listing.title }} — {{ listing.price_mad | mad }}{% endblock %}
+
+{% block content %}
+<div class="container detail">
+  <a href="javascript:history.back()" class="back-link">← Retour</a>
+
+  <div class="detail-layout">
+    <div class="detail-main">
+      <div class="gallery" data-gallery>
+        <div class="gallery-main">
+          {% if listing.cover %}
+            <img src="{{ listing.cover.url }}" alt="{{ listing.title }}" data-gallery-main>
+          {% else %}
+            <img src="/static/img/no-photo.svg" alt="" class="placeholder">
+          {% endif %}
+          {% if listing.status == 'sold' %}<span class="badge badge-sold badge-lg">Vendu</span>{% endif %}
+        </div>
+        {% if listing.photos|length > 1 %}
+        <div class="gallery-thumbs">
+          {% for p in listing.photos %}
+            <button type="button" class="thumb{% if loop.first %} active{% endif %}" data-src="{{ p.url }}" aria-label="Photo {{ loop.index }}">
+              <img src="{{ p.url }}" alt="" loading="lazy">
+            </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <section class="panel">
+        <h2>Caractéristiques</h2>
+        <dl class="specs">
+          <div><dt>Marque</dt><dd>{{ listing.brand }}</dd></div>
+          <div><dt>Modèle</dt><dd>{{ listing.model }}</dd></div>
+          <div><dt>Année</dt><dd>{{ listing.year }}</dd></div>
+          <div><dt>Kilométrage</dt><dd>{{ listing.mileage_km | num }} km</dd></div>
+          <div><dt>Carburant</dt><dd>{{ listing.fuel }}</dd></div>
+          <div><dt>Boîte</dt><dd>{{ listing.gearbox }}</dd></div>
+          {% if listing.condition %}<div><dt>État</dt><dd>{{ listing.condition }}</dd></div>{% endif %}
+          {% if listing.body_type %}<div><dt>Carrosserie</dt><dd>{{ listing.body_type }}</dd></div>{% endif %}
+          {% if listing.color %}<div><dt>Couleur</dt><dd>{{ listing.color }}</dd></div>{% endif %}
+          {% if listing.fiscal_power %}<div><dt>Puissance fiscale</dt><dd>{{ listing.fiscal_power }} CV</dd></div>{% endif %}
+          {% if listing.horsepower %}<div><dt>Puissance</dt><dd>{{ listing.horsepower }} ch</dd></div>{% endif %}
+          <div><dt>Première main</dt><dd>{{ 'Oui' if listing.first_hand else 'Non' }}</dd></div>
+          <div><dt>Ville</dt><dd>{{ listing.city }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="panel">
+        <h2>Description</h2>
+        <p class="description">{{ listing.description }}</p>
+      </section>
+    </div>
+
+    <aside class="detail-side">
+      <div class="panel sticky">
+        <h1 class="detail-title">{{ listing.title }}</h1>
+        <div class="detail-price">{{ listing.price_mad | mad }}</div>
+        <p class="muted">{{ listing.city }} · publiée {{ listing.created_at | timeago }} · {{ listing.views }} vue{{ 's' if listing.views != 1 }}</p>
+
+        {% if is_owner %}
+          <div class="owner-actions">
+            <a href="/annonces/{{ listing.id }}/modifier" class="btn btn-primary btn-block">Modifier l'annonce</a>
+            <form method="post" action="/annonces/{{ listing.id }}/statut">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              {% if listing.status == 'active' %}
+                <input type="hidden" name="status" value="sold">
+                <button class="btn btn-ghost btn-block">Marquer comme vendue</button>
+              {% else %}
+                <input type="hidden" name="status" value="active">
+                <button class="btn btn-ghost btn-block">Remettre en ligne</button>
+              {% endif %}
+            </form>
+            <form method="post" action="/annonces/{{ listing.id }}/supprimer" data-confirm="Supprimer définitivement cette annonce ?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button class="btn btn-danger-ghost btn-block">Supprimer</button>
+            </form>
+          </div>
+        {% else %}
+          <div class="seller">
+            <div class="avatar">{{ listing.owner.full_name[:1] | upper }}</div>
+            <div>
+              <strong>{{ listing.owner.full_name }}</strong>
+              <p class="muted small">Membre depuis {{ listing.owner.created_at.strftime('%m/%Y') }} · {{ listing.owner.city }}</p>
+            </div>
+          </div>
+          {% if listing.status == 'active' %}
+            {% if user %}
+              <button type="button" class="btn btn-primary btn-block" data-reveal-phone="{{ listing.owner.phone }}">📞 Afficher le numéro</button>
+              <a class="btn btn-whatsapp btn-block" target="_blank" rel="noopener"
+                 href="https://wa.me/{{ listing.owner.phone | wa }}?text={{ ('Bonjour, je suis intéressé(e) par votre annonce « ' ~ listing.title ~ ' » sur Taman Pro.') | urlencode }}">
+                WhatsApp
+              </a>
+            {% else %}
+              <a href="/login?next=/annonces/{{ listing.id }}" class="btn btn-primary btn-block">Se connecter pour contacter le vendeur</a>
+            {% endif %}
+          {% else %}
+            <p class="notice">Ce véhicule a été vendu.</p>
+          {% endif %}
+          <div class="safety">
+            <strong>Conseils de sécurité</strong>
+            <ul>
+              <li>Ne versez jamais d'acompte avant d'avoir vu le véhicule.</li>
+              <li>Vérifiez la carte grise et la visite technique.</li>
+              <li>Faites inspecter la voiture par un mécanicien de confiance.</li>
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+
+  {% if similar %}
+  <section class="similar">
+    <h2>Autres {{ listing.brand }} à vendre</h2>
+    <div class="grid">{% for l in similar %}{{ listing_card(l) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

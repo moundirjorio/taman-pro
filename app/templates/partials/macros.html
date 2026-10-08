@@ -1,0 +1,48 @@
+{% macro field_error(errors, name) -%}
+  {% if errors.get(name) %}<p class="field-error">{{ errors[name] }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro input(name, label, values, errors, type="text", required=true, hint=None) -%}
+<div class="field{% if errors.get(name) %} has-error{% endif %}">
+  <label for="{{ name }}">{{ label }}{% if not required %} <span class="optional">(facultatif)</span>{% endif %}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}"
+         {% if required %}required{% endif %} {{ kwargs | xmlattr }}>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+  {{ field_error(errors, name) }}
+</div>
+{%- endmacro %}
+
+{% macro select(name, label, options, values, errors, placeholder="Choisir…", required=true) -%}
+<div class="field{% if errors.get(name) %} has-error{% endif %}">
+  <label for="{{ name }}">{{ label }}</label>
+  <select id="{{ name }}" name="{{ name }}" {% if required %}required{% endif %} {{ kwargs | xmlattr }}>
+    <option value="">{{ placeholder }}</option>
+    {% for opt in options %}
+      <option value="{{ opt }}" {% if values.get(name) == opt %}selected{% endif %}>{{ opt }}</option>
+    {% endfor %}
+  </select>
+  {{ field_error(errors, name) }}
+</div>
+{%- endmacro %}
+
+{% macro listing_card(l) -%}
+<a class="card" href="/annonces/{{ l.id }}">
+  <div class="card-photo">
+    {% if l.cover %}
+      <img src="{{ l.cover.url }}" alt="{{ l.title }}" loading="lazy">
+    {% else %}
+      <img src="/static/img/no-photo.svg" alt="" class="placeholder">
+      <span class="no-photo-label">Photos à venir</span>
+    {% endif %}
+    {% if l.status == 'sold' %}<span class="badge badge-sold">Vendu</span>{% endif %}
+    {% if l.photos|length > 1 %}<span class="photo-count">📷 {{ l.photos|length }}</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <p class="card-brand">{{ l.brand }} <span>{{ l.year }}</span></p>
+    <h3 class="card-title">{{ l.title }}</h3>
+    <div class="card-price">{{ l.price_mad | mad }}</div>
+    <p class="card-specs">{{ l.year }} · {{ l.mileage_km | num }} km · {{ l.fuel }} · {{ l.gearbox }}</p>
+    <p class="card-meta"><span>{{ l.city }} · {{ l.created_at | timeago }}</span><span class="card-arrow" aria-hidden="true">↗</span></p>
+  </div>
+</a>
+{%- endmacro %}

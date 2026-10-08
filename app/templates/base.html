@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Voitures d'occasion au Maroc{% endblock %} · Taman Pro</title>
+  <meta name="description" content="Taman Pro — achetez et vendez votre voiture d'occasion au Maroc en toute confiance.">
+  <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Aller au contenu</a>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="/" class="logo" aria-label="Taman Pro — accueil"><img src="/static/img/logo.svg" width="34" height="34" alt="">TAMAN<span>PRO</span></a>
+      <nav class="nav" aria-label="Navigation principale">
+        <a href="/#annonces" class="nav-link nav-browse">Explorer les annonces</a>
+        {% if user %}
+          <a href="/mes-annonces" class="nav-link">Mes annonces</a>
+          <a href="/compte" class="nav-link">Mon compte</a>
+          <form method="post" action="/logout" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="nav-link link-button">Déconnexion</button>
+          </form>
+          <a href="/annonces/nouvelle" class="btn btn-gold btn-sm">+ Déposer une annonce</a>
+        {% else %}
+          <a href="/login" class="nav-link">Connexion</a>
+          <a href="/annonces/nouvelle" class="btn btn-gold btn-sm">+ Déposer une annonce</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  {% if flashes %}
+  <div class="container flashes">
+    {% for f in flashes %}
+      <div class="flash flash-{{ f.category }}" role="status">{{ f.message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span class="logo logo-sm">TAMAN<span>PRO</span></span>
+      <span>Votre prochaine histoire commence sur la route.<br><span class="small">Achat & vente automobile au Maroc · Projet étudiant 2025/2026</span></span>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import input, select %}
+{% block title %}Créer un compte{% endblock %}
+
+{% block content %}
+<div class="container auth">
+  <div class="panel auth-card">
+    <h1>Créer un compte</h1>
+    <p class="muted">Gratuit. Publiez vos annonces et contactez les vendeurs.</p>
+
+    <form method="post" action="/register" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="next" value="{{ next }}">
+      {{ input("full_name", "Nom complet", values, errors, autocomplete="name", maxlength=120) }}
+      {{ input("email", "Email", values, errors, type="email", autocomplete="email") }}
+      {{ input("phone", "Téléphone", values, errors, type="tel", autocomplete="tel", placeholder="06 12 34 56 78",
+               hint="Visible uniquement par les membres connectés qui consultent vos annonces.") }}
+      {{ select("city", "Ville", CITIES, values, errors) }}
+      {{ input("password", "Mot de passe", {}, errors, type="password", autocomplete="new-password", minlength=8,
+               hint="8 caractères minimum.") }}
+      {{ input("password_confirm", "Confirmer le mot de passe", {}, errors, type="password", autocomplete="new-password") }}
+      <button type="submit" class="btn btn-gold btn-block">Créer mon compte</button>
+    </form>
+    <p class="auth-switch">Déjà inscrit ? <a href="/login?next={{ next | urlencode }}">Se connecter</a></p>
+  </div>
+</div>
+{% endblock %}

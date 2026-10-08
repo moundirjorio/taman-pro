@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import input, select %}
+{% block title %}Mon compte{% endblock %}
+
+{% block content %}
+<div class="container narrow">
+  <h1 class="page-title">Mon compte</h1>
+
+  <form method="post" action="/compte" class="form panel">
+    <h2>Profil</h2>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" value="{{ user.email }}" disabled>
+    </div>
+    {{ input("full_name", "Nom complet", values, errors, maxlength=120) }}
+    {{ input("phone", "Téléphone", values, errors, type="tel") }}
+    {{ select("city", "Ville", CITIES, values, errors) }}
+    <div class="form-actions"><button type="submit" class="btn btn-primary">Enregistrer</button></div>
+  </form>
+
+  <form method="post" action="/compte/mot-de-passe" class="form panel">
+    <h2>Changer de mot de passe</h2>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {{ input("current_password", "Mot de passe actuel", {}, pw_errors, type="password", autocomplete="current-password") }}
+    {{ input("new_password", "Nouveau mot de passe", {}, pw_errors, type="password", autocomplete="new-password", minlength=8) }}
+    {{ input("password_confirm", "Confirmer le nouveau mot de passe", {}, pw_errors, type="password", autocomplete="new-password") }}
+    <div class="form-actions"><button type="submit" class="btn btn-primary">Modifier le mot de passe</button></div>
+  </form>
+</div>
+{% endblock %}

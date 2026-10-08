@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import input, select, field_error %}
+
+{% block title %}{{ "Modifier l'annonce" if listing else "Déposer une annonce" }}{% endblock %}
+
+{% block content %}
+<div class="container narrow">
+  <h1 class="page-title">{{ "Modifier l'annonce" if listing else "Déposer une annonce" }}</h1>
+  {% if errors %}<div class="flash flash-error">Corrigez les champs en rouge{% if not listing or errors.get('photos') %} et sélectionnez à nouveau vos photos{% endif %}.</div>{% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="form" data-listing-form
+        action="{{ '/annonces/%d/modifier' % listing.id if listing else '/annonces/nouvelle' }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <fieldset class="panel">
+      <legend>Le véhicule</legend>
+      <div class="row-2">
+        {{ select("brand", "Marque", BRANDS, values, errors) }}
+        {{ input("model", "Modèle", values, errors, list="model-options", maxlength=60, autocomplete="off") }}
+        <datalist id="model-options"></datalist>
+      </div>
+      <div class="row-3">
+        {{ input("year", "Année", values, errors, type="number", min=1980, placeholder="2019") }}
+        {{ input("mileage_km", "Kilométrage (km)", values, errors, type="number", min=0, step=1, placeholder="85000") }}
+        {{ select("condition", "État", CONDITIONS, values, errors) }}
+      </div>
+      <div class="row-2">
+        {{ select("body_type", "Carrosserie", BODY_TYPES, values, errors) }}
+        {{ select("color", "Couleur", COLORS, values, errors) }}
+      </div>
+      <div class="row-2">
+        {{ select("fuel", "Carburant", FUELS, values, errors) }}
+        {{ select("gearbox", "Boîte de vitesses", GEARBOXES, values, errors) }}
+      </div>
+      <div class="row-2">
+        {{ input("fiscal_power", "Puissance fiscale (CV)", values, errors, type="number", required=false, min=1, max=60) }}
+        {{ input("horsepower", "Puissance (ch)", values, errors, type="number", required=false, min=30, max=2000) }}
+      </div>
+      <label class="checkbox">
+        <input type="checkbox" name="first_hand" {% if values.get('first_hand') == 'on' %}checked{% endif %}>
+        Première main
+      </label>
+    </fieldset>
+
+    <fieldset class="panel">
+      <legend>Prix et localisation</legend>
+      <div class="row-2">
+        {{ input("price_mad", "Prix (MAD)", values, errors, type="number", min=5000, step=500, placeholder="95000") }}
+        {{ select("city", "Ville", CITIES, values, errors) }}
+      </div>
+
+      <div class="estimator" data-estimator>
+        <div class="estimator-head">
+          <div>
+            <p class="estimator-title">Estimation IA du prix</p>
+            <p class="hint">Calculée à partir de plus de 60 000 annonces du marché marocain.</p>
+          </div>
+          <button type="button" class="btn btn-primary" data-estimate-btn>Estimer le prix</button>
+        </div>
+        <div class="estimator-result" data-estimate-result hidden aria-live="polite"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="panel">
+      <legend>L'annonce</legend>
+      {{ input("title", "Titre", values, errors, required=false, maxlength=120,
+               hint="Laissez vide pour un titre automatique : « Marque Modèle Année ».") }}
+      <div class="field{% if errors.get('description') %} has-error{% endif %}">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="7" required minlength="20" maxlength="5000"
+                  placeholder="État général, entretien (carnet, factures), options, raison de la vente…">{{ values.get('description', '') }}</textarea>
+        {{ field_error(errors, "description") }}
+      </div>
+    </fieldset>
+
+    <fieldset class="panel">
+      <legend>Photos</legend>
+      <p class="hint">Jusqu'à {{ MAX_PHOTOS }} photos (JPEG, PNG ou WebP, 5 Mo max chacune). La première sera la photo principale. Les annonces avec 8 photos ou plus reçoivent beaucoup plus de contacts.</p>
+
+      {% if listing and listing.photos %}
+      <div class="existing-photos">
+        {% for p in listing.photos %}
+          <label class="existing-photo">
+            <img src="{{ p.url }}" alt="Photo {{ loop.index }}">
+            <span><input type="checkbox" name="delete_photos" value="{{ p.id }}"> Supprimer</span>
+          </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="field{% if errors.get('photos') %} has-error{% endif %}">
+        <input type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple data-photo-input
+               data-existing="{{ listing.photos|length if listing else 0 }}" data-max="{{ MAX_PHOTOS }}">
+        <div class="photo-preview" data-photo-preview></div>
+        {{ field_error(errors, "photos") }}
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <a href="{{ '/annonces/%d' % listing.id if listing else '/' }}" class="btn btn-ghost">Annuler</a>
+      <button type="submit" class="btn btn-gold">{{ "Enregistrer" if listing else "Publier l'annonce" }}</button>
+    </div>
+  </form>
+</div>
+<script>window.TAMAN_MODELS = {{ MODELS | tojson }};</script>
+{% endblock %}

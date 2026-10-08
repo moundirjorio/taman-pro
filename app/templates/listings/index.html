@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import listing_card %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="hero-intro">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="live-dot"></span> LE BON DÉPART, PARTOUT AU MAROC</p>
+        <h1>Une nouvelle voiture.<br><span class="gold">De nouveaux horizons.</span></h1>
+        <p class="hero-sub">Trouvez celle qui vous ressemble. Explorez les annonces,<br class="desktop-break"> comparez les prix et échangez directement avec les vendeurs.</p>
+      </div>
+      <div class="hero-note"><span class="hero-note-symbol" aria-hidden="true">↗</span><p>Votre prochaine voiture,<br><strong>à portée de recherche.</strong></p><span class="hero-note-caption">ACHETER · VENDRE · AVANCER</span></div>
+    </div>
+
+    <form method="get" action="/" class="search">
+      <div class="search-main">
+        <label class="search-field"><span>Quelle voiture cherchez-vous ?</span><input type="search" name="q" value="{{ filters.q }}" placeholder="Marque, modèle… ex : Dacia Duster" aria-label="Recherche"></label>
+        <label class="search-field"><span>Où cherchez-vous ?</span><select name="city" aria-label="Ville">
+          <option value="">Tout le Maroc</option>
+          {% for c in CITIES %}<option value="{{ c }}" {% if filters.city == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select></label>
+        <button type="submit" class="btn btn-gold">Rechercher <span aria-hidden="true">↗</span></button>
+      </div>
+
+      <details class="filters" {% if filters.active_count %}open{% endif %}>
+        <summary>Filtres avancés{% if filters.active_count %} ({{ filters.active_count }}){% endif %}</summary>
+        <div class="filters-grid">
+          <label>Marque
+            <select name="brand">
+              <option value="">Toutes</option>
+              {% for b in BRANDS %}<option value="{{ b }}" {% if filters.brand == b %}selected{% endif %}>{{ b }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Carburant
+            <select name="fuel">
+              <option value="">Tous</option>
+              {% for f in FUELS %}<option value="{{ f }}" {% if filters.fuel == f %}selected{% endif %}>{{ f }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Boîte
+            <select name="gearbox">
+              <option value="">Toutes</option>
+              {% for g in GEARBOXES %}<option value="{{ g }}" {% if filters.gearbox == g %}selected{% endif %}>{{ g }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Prix min (MAD)<input type="number" name="price_min" min="0" step="1000" value="{{ filters.price_min or '' }}"></label>
+          <label>Prix max (MAD)<input type="number" name="price_max" min="0" step="1000" value="{{ filters.price_max or '' }}"></label>
+          <label>Année min<input type="number" name="year_min" min="1980" value="{{ filters.year_min or '' }}"></label>
+          <label>Année max<input type="number" name="year_max" min="1980" value="{{ filters.year_max or '' }}"></label>
+          <label>Kilométrage max<input type="number" name="km_max" min="0" step="5000" value="{{ filters.km_max or '' }}"></label>
+        </div>
+        <div class="filters-actions">
+          <a href="/" class="btn btn-ghost btn-sm">Réinitialiser</a>
+          <button type="submit" class="btn btn-primary btn-sm">Appliquer</button>
+        </div>
+      </details>
+      <input type="hidden" name="sort" value="{{ filters.sort }}">
+    </form>
+    <div class="hero-bottom"><span>À chaque envie, sa prochaine voiture.</span><span>Des annonces partout au Maroc <span aria-hidden="true">↗</span></span></div>
+  </div>
+</section>
+
+<section class="container results" id="annonces" aria-labelledby="results-title">
+  <div class="brand-shortcuts" aria-label="Rechercher par marque">
+    <span>Une marque en tête ?</span>
+    {% for b in ['Dacia', 'Renault', 'Peugeot', 'Volkswagen', 'Hyundai', 'Toyota'] %}
+    <a href="/?{{ filters.query_string(brand=b, page=1) }}#annonces" class="brand-chip{% if filters.brand == b %} is-active{% endif %}" {% if filters.brand == b %}aria-current="true"{% endif %}>{{ b }} <span aria-hidden="true">↗</span></a>
+    {% endfor %}
+  </div>
+  <div class="results-head">
+    <div><p class="section-kicker">LE PROCHAIN CHAPITRE</p><h2 id="results-title">{% if filters.q or filters.city or filters.active_count %}Votre sélection{% else %}Les dernières annonces{% endif %}</h2><p class="results-count"><strong>{{ total | num }}</strong> annonce{{ 's' if total != 1 }} pour trouver votre prochain départ{% if filters.q or filters.city or filters.active_count %} · <a href="/#annonces">Effacer les filtres</a>{% endif %}</p></div>
+    <form method="get" action="/" class="sort-form">
+      {% for key, value in filters.params(exclude=('sort', 'page')).items() %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}">
+      {% endfor %}
+      <label>Trier :
+        <select name="sort" data-autosubmit>
+          {% for key, label in SORTS.items() %}<option value="{{ key }}" {% if filters.sort == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+      <noscript><button type="submit" class="btn btn-ghost btn-sm">OK</button></noscript>
+    </form>
+  </div>
+
+  {% if listings %}
+    <div class="grid">
+      {% for l in listings %}{{ listing_card(l) }}{% endfor %}
+    </div>
+
+    {% if pages > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+      {% if filters.page > 1 %}<a href="/?{{ filters.query_string(page=filters.page - 1) }}" class="btn btn-ghost btn-sm">← Précédent</a>{% endif %}
+      <span>Page {{ filters.page }} / {{ pages }}</span>
+      {% if filters.page < pages %}<a href="/?{{ filters.query_string(page=filters.page + 1) }}" class="btn btn-ghost btn-sm">Suivant →</a>{% endif %}
+    </nav>
+    {% endif %}
+  {% else %}
+    <div class="empty">
+      <p class="empty-title">Aucune annonce ne correspond à votre recherche.</p>
+      <p>Essayez d'élargir vos critères{% if not user %}, ou soyez le premier à publier{% endif %}.</p>
+      <a href="/annonces/nouvelle" class="btn btn-gold">+ Déposer une annonce</a>
+    </div>
+  {% endif %}
+</section>
+<section class="container">
+  <div class="sell-banner"><div><p class="section-kicker">ENVIE DE CHANGER ?</p><h2>Votre voiture a encore de belles routes à parcourir.</h2><p>Présentez-la à son prochain propriétaire, en quelques étapes.</p></div><a href="/annonces/nouvelle" class="btn btn-primary">Déposer mon annonce <span aria-hidden="true">↗</span></a></div>
+</section>
+{% endblock %}

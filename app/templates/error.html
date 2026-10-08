@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Erreur {{ code }}{% endblock %}
+
+{% block content %}
+<div class="container empty error-page">
+  <p class="error-code">{{ code }}</p>
+  <p class="empty-title">{{ detail }}</p>
+  <a href="/" class="btn btn-primary">Retour aux annonces</a>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Mes annonces{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <h1 class="page-title">Mes annonces</h1>
+    <a href="/annonces/nouvelle" class="btn btn-gold">+ Nouvelle annonce</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-value">{{ stats.active }}</span><span class="stat-label">En ligne</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.sold }}</span><span class="stat-label">Vendues</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.views | num }}</span><span class="stat-label">Vues au total</span></div>
+  </div>
+
+  {% if listings %}
+  <ul class="my-list">
+    {% for l in listings %}
+    <li class="my-item panel">
+      <a href="/annonces/{{ l.id }}" class="my-thumb">
+        <img src="{{ l.cover.url if l.cover else '/static/img/no-photo.svg' }}" alt="">
+      </a>
+      <div class="my-info">
+        <a href="/annonces/{{ l.id }}" class="my-title">{{ l.title }}</a>
+        <div class="card-price">{{ l.price_mad | mad }}</div>
+        <p class="muted small">
+          <span class="status status-{{ l.status }}">{{ 'En ligne' if l.status == 'active' else 'Vendue' }}</span>
+          · {{ l.views }} vue{{ 's' if l.views != 1 }} · publiée {{ l.created_at | timeago }}
+        </p>
+      </div>
+      <div class="my-actions">
+        <a href="/annonces/{{ l.id }}/modifier" class="btn btn-ghost btn-sm">Modifier</a>
+        <form method="post" action="/annonces/{{ l.id }}/statut">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="back" value="list">
+          <input type="hidden" name="status" value="{{ 'sold' if l.status == 'active' else 'active' }}">
+          <button class="btn btn-ghost btn-sm">{{ 'Marquer vendue' if l.status == 'active' else 'Remettre en ligne' }}</button>
+        </form>
+        <form method="post" action="/annonces/{{ l.id }}/supprimer" data-confirm="Supprimer définitivement « {{ l.title }} » ?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn btn-danger-ghost btn-sm">Supprimer</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty">
+    <p class="empty-title">Vous n'avez pas encore publié d'annonce.</p>
+    <a href="/annonces/nouvelle" class="btn btn-gold">Publier ma première annonce</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
