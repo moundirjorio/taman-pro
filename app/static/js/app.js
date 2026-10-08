@@ -2,6 +2,31 @@
 (function () {
   "use strict";
 
+  // Theme sombre / clair
+  var root = document.documentElement;
+  var toggle = document.querySelector(".theme-toggle");
+  var applyTheme = function (theme) {
+    root.setAttribute("data-theme", theme);
+    localStorage.setItem("taman-theme", theme);
+    if (!toggle) return;
+    var isDark = theme === "dark";
+    toggle.setAttribute("aria-pressed", String(isDark));
+    toggle.querySelector(".theme-icon").textContent = isDark ? "☀️" : "🌙";
+    toggle.querySelector(".theme-label").textContent = isDark ? "Mode clair" : "Mode sombre";
+  };
+
+  var savedTheme = localStorage.getItem("taman-theme");
+  var systemPrefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var initialTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
+  applyTheme(initialTheme);
+
+  if (toggle) {
+    toggle.addEventListener("click", function () {
+      var nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    });
+  }
+
   // Tri : soumission automatique au changement
   document.querySelectorAll("[data-autosubmit]").forEach(function (el) {
     el.addEventListener("change", function () { el.form.submit(); });

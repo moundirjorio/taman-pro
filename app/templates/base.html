@@ -14,6 +14,10 @@
     <div class="container topbar-inner">
       <a href="/" class="logo" aria-label="Taman Pro — accueil"><img src="/static/img/logo.svg" width="34" height="34" alt="">TAMAN<span>PRO</span></a>
       <nav class="nav" aria-label="Navigation principale">
+        <button type="button" class="theme-toggle" aria-label="Basculer le mode sombre" aria-pressed="false">
+          <span class="theme-icon" aria-hidden="true">🌙</span>
+          <span class="theme-label">Mode sombre</span>
+        </button>
         <a href="/#annonces" class="nav-link nav-browse">Explorer les annonces</a>
         {% if user %}
           <a href="/mes-annonces" class="nav-link">Mes annonces</a>
